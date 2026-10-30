@@ -1,0 +1,42 @@
+name: Build SKYLINE for Windows
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "SKYLINE.html"
+      - "electron/**"
+      - "build/**"
+      - "package.json"
+      - ".github/workflows/build-windows.yml"
+
+jobs:
+  windows:
+    name: Build installer and portable EXE
+    runs-on: windows-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out project
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install build dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build Windows EXEs
+        run: npm run dist:win
+
+      - name: Upload Windows builds
+        uses: actions/upload-artifact@v4
+        with:
+          name: SKYLINE-Windows
+          path: |
+            dist/*.exe
+          if-no-files-found: error
+          retention-days: 30
